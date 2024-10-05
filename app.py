@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify ,send_file
 from flask_cors import CORS
 from News_api.get_preview import get_info
 from News_api.fetch_news import get_unified_news
-app = Flask(__name__)
+
 import datetime
 import json
 import os
