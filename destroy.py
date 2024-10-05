@@ -23,7 +23,7 @@ def update_history_file(directory):
 
 # Check if a new day has started
 def is_new_day():
-    last_run_file = 'last_run_date.txt'
+    last_run_file = 'db/last_run_date.txt'
     today = datetime.now().date()
 
     if os.path.exists(last_run_file):
@@ -34,78 +34,29 @@ def is_new_day():
 
     with open(last_run_file, 'w') as f:
         f.write(str(today))
-
+        return True
     return True
+def destroy():
+    if is_new_day():
+        # Clean the 'chats' directory
+        chats_directory = 'chats'
+        clean_directory(chats_directory)
+        update_history_file(chats_directory)
 
-if is_new_day():
-    # Clean the 'chats' directory
-    chats_directory = 'chats'
-    clean_directory(chats_directory)
-    update_history_file(chats_directory)
-
-    # Clean the 'summarized/audio' directory
-    audio_directory = 'summarized/audio'
-    clean_directory(audio_directory)
-
-    # Define the directory to clean
-    directory = 'chats'
-
-    # Delete all files and folders in the directory
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception as e:
-            print(f'Failed to delete {file_path}. Reason: {e}')
-
-    # Replace history.json with chats_history
-    chats_history = {"history": []}
-    with open(os.path.join(directory, 'history.json'), 'w') as f:
-        json.dump(chats_history, f)
+        # Clean the 'summarized/audio' directory
+        audio_directory = 'summarized/audio'
+        clean_directory(audio_directory)
+        update_history_file(audio_directory)
+        # Define the directory to clean
+        summarized_directory = 'summarized/text'
+        clean_directory(summarized_directory)
+        update_history_file(summarized_directory)
         
-    directory = "summarized/audio"
-    # Delete all files and folders in the directory
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception as e:
-            print(f'Failed to delete {file_path}. Reason: {e}')
-
-    # Replace history.json with chats_history
-    chats_history = {"history": []}
-    with open(os.path.join(directory, 'history.json'), 'w') as f:
-        json.dump(chats_history, f)
+        # text summarization
+        clean_directory('text')
+        
+        text_directory = 'text/summarization'
+        os.mkdir(text_directory)
+        update_history_file(text_directory)
         
         
-
-    directory = "summarized/text"
-    # Delete all files and folders in the directory
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception as e:
-            print(f'Failed to delete {file_path}. Reason: {e}')
-
-    directory = "db"
-    # Delete all files and folders in the directory
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception as e:
-            print(f'Failed to delete {file_path}. Reason: {e}')
-

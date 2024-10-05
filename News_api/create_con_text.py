@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_google_genai.embeddings import GoogleGenerativeAIEmbeddings
-from langchain_chroma.vectorstores import Chroma
+# from langchain_chroma.vectorstores import Chroma
 from langchain.prompts import HumanMessagePromptTemplate, AIMessagePromptTemplate, PromptTemplate
 from langchain.chains import LLMChain
 

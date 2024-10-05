@@ -19,3 +19,4 @@ langchain-groq==0.2.0
 langchain-text-splitters==0.3.0
 langchainhub==0.1.21
 langchain-google-genai==2.0.0
+faiss-cpu

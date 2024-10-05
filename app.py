@@ -9,6 +9,7 @@ import os
 from News_api.summarize import NewsSummarizer
 from News_api.chat_with_ai import Chat
 from News_api.txt_2_speech import text_to_speech
+import destroy
 
 summarizer = NewsSummarizer()
 app = Flask(__name__)
@@ -33,7 +34,7 @@ def get_preview():
 
 @app.route("/get_daily_news" , methods = ["GET","POST"])
 def get_daily_news():
-
+    destroy.destroy()
     print("get_daily_news")
     if request.method == "POST":
         data = request.get_json()

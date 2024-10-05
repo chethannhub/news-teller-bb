@@ -1,18 +1,21 @@
 import os
+from uuid import uuid4
+from langchain.docstore import InMemoryDocstore
 import json
 from langchain_core.documents import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from bs4 import BeautifulSoup
-import requests
 import datetime
-from langchain_chroma.vectorstores import Chroma
+import faiss
+from langchain.vectorstores import FAISS
 from langchain_google_genai.embeddings import GoogleGenerativeAIEmbeddings
 from dotenv import load_dotenv
-load_dotenv()
-embedding = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
-splitter = RecursiveCharacterTextSplitter(chunk_overlap=100, chunk_size=1000)
-
 import glob
+
+load_dotenv()
+embedding = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+splitter = RecursiveCharacterTextSplitter(chunk_overlap=150, chunk_size=600)
+
+# Function to get the most recent file
 def get_most_recent_file(base_path):
     files = [f for f in glob.glob(os.path.join(base_path, '*')) if os.path.isfile(f)]
     if not files:
@@ -22,17 +25,44 @@ def get_most_recent_file(base_path):
     print(f"Most recent file: {most_recent_file}")
     return most_recent_file
 
-
-def convert_db(urls ,persist_directory =None):
-    print("urls=  == = =",urls)
+# Function to convert documents to FAISS index
+def convert_db(urls, persist_directory=None):
+    print("urls=  == = =", urls)
     texts = []
+
+    # Read the most recent JSON file containing article history
     with open(get_most_recent_file("text")) as f:
         history = json.load(f)
+
+    # Iterate through articles and collect the ones specified in `urls`
     for article in history["Articles"]:
         if article["id"] in urls:
-            print(article["id"])
-            texts.append(Document(page_content=article['brief'] + article["content"] , metadata={"source": article["urls"] , "heading": article["title"] }))
-    
+            # Debugging: Print the type and content of article["brief"] and article["content"]
+            print(f"article['brief'] type: {type(article['brief'])}, ")
+            print(f"article['content'] type: {type(article['content'])},")
+
+            chunks = splitter.split_text(article["brief"] + article["content"])
+            print(len(article['brief'] + article['content']))
+            # Debugging: Print the output of split_text
+            print(f"split_text output: {chunks}")
+
+            for chunk in chunks:
+                print(article["id"], "  i am chunk")
+                chunk = Document(page_content=chunk, metadata={"source": article["urls"], "heading": article["title"]})
+                texts.append(chunk)
+    # Create a directory for storing the FAISS index
+    os.makedirs("db", exist_ok=True)
+    if not persist_directory:
+        persist_directory = f"db/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
+
+    print(texts, persist_directory)
+
+    index = faiss.IndexFlatL2(len(embedding.embed_query("hello world")))
+    vector_store = FAISS(embedding_function=embedding, index=index, docstore=InMemoryDocstore({}) , index_to_docstore_id={})
+    uuids = [str(uuid4()) for _ in range(len(texts))]
+    vector_store.add_documents(documents=texts, ids=uuids)
+    vector_store.save_local(persist_directory)
+    return persist_directory
     # for url in urls:
     #     print("done")
     #     response = requests.get(url)
@@ -49,9 +79,3 @@ def convert_db(urls ,persist_directory =None):
     #     for chunk in chunks:
     #         chunk = Document(page_content=chunk, metadata={"source": url, "heading": haeding , "image": image , "author": author})
     #         texts.append(chunk)
-    os.makedirs("db", exist_ok=True)
-    if not persist_directory:
-        persist_directory = f"db/{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}"
-    print(texts , persist_directory)
-    vector_db = Chroma.from_documents(texts, embedding, persist_directory=persist_directory)
-    return persist_directory

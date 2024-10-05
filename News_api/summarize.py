@@ -3,7 +3,8 @@ import datetime
 import os
 from langchain.schema import Document
 from langchain_google_genai.embeddings import GoogleGenerativeAIEmbeddings
-from langchain_chroma.vectorstores import Chroma
+# from langchain_chroma.vectorstores import Chroma
+
 from langchain.prompts import   PromptTemplate
 from langchain.chains import LLMChain
 import time
